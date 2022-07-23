@@ -2,10 +2,23 @@ const express = require("express"),
        app = express(),
        port = process.env.PORT || 8080,
        cors = require("cors");
+
+const basicAuth = require("express-basic-auth");
+var { authenticator, upsertUser, cookieAuth } = require("./authentication");
+const auth = basicAuth({
+    authorizer: authenticator
+});
+const cookieParser = require("cookie-parser");
+app.use(cookieParser("82e4e438a0705fabf61f9854e3b575af"));
+
 const bodyParser = require('body-parser');
 const fs = require("fs");
+//app.use(cors({})); line. It's important so that our app can send credentials to the backend.
+app.use(cors({
+    credentials: true,
+    origin: 'http://localhost:3000'
+}));
 
-app.use(cors());
 app.use(bodyParser.json({ extended: true }));
 app.listen(port, () => console.log("Backend server live on " + port));
 
@@ -65,3 +78,26 @@ app.get("/items/search",searchItems)
     //console.log(returnData);
     response.json(returnData);
   }
+
+  //GET /authenticate uses the auth middleware to verify that the user is authenticated. 
+  //If the authentication succeeds, it will set a signed cookie on the response that 
+  //will persist the user's authentication for later requests.
+app.get("/authenticate", auth, (req, res) => {
+  console.log(`user logging in: ${req.auth.user}`);
+  res.cookie('user', req.auth.user, { signed: true });
+  res.sendStatus(200);
+});
+
+//POST /users will add a new user to the users store and update the users.json file.
+app.post("/users", (req, res) => {
+    const b64auth = (req.headers.authorization || '').split(' ')[1] || ''
+    const [username, password] = Buffer.from(b64auth, 'base64').toString().split(':')
+    const upsertSucceeded = upsertUser(username, password)
+    res.sendStatus(upsertSucceeded ? 200 : 401);
+});
+
+//GET /logout will clear the signed user cookie.
+app.get("/logout", (req, res) => {
+    res.clearCookie('user');
+    res.end();
+});
