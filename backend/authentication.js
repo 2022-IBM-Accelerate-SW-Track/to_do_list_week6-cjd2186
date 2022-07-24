@@ -12,7 +12,7 @@ let users = {};
 
 // performs a SHA256 hash of a string
 const sha256 = x => crypto.createHash('sha256').update(x, 'utf8').digest('hex');
-
+//comment
 // looks for the username/password combo in the users store
 const authenticator = (user, password) => {
     if(!users[user] || !user || !password) return false;
