@@ -60,7 +60,6 @@ app.get("/items", getItems)
 //** week5, get all items from the json database*/
   function getItems (request, response) {
     var data = fs.readFileSync('database.json');
-    
     //uncomment to see the data being returned 
     //console.log(JSON.parse(data));
 
@@ -73,7 +72,6 @@ app.get("/items/search", searchItems)
     var searchField = request.query.taskname;
     //uncomment to see the searchField passed in
     //console.log(searchField);
-
     var json = JSON.parse(fs.readFileSync("database.json"));
     var returnData = json.filter((jsondata) => jsondata.Task.includes(searchField));
 
@@ -95,7 +93,7 @@ app.post("/users", (req, res) => {
     const upsertSucceeded = upsertUser(username, password)
     res.sendStatus(upsertSucceeded ? 200 : 401);
 });
-
+//comment
 app.get("/logout", (req, res) => {
     res.clearCookie('user');
     res.end();
